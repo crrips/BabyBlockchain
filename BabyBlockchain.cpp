@@ -1,18 +1,25 @@
-#include <iostream>
 #include "Classes.h"
 #include "Functions.h"
-using namespace std;
+
+int navigate;
+
+void Menu() {
+	cout << "(1) " << endl
+		<< "(2) " << endl
+		<< "(3) " << endl
+		<< "(4) " << endl
+		<< "(5) " << endl
+		<< "\nEnter your selection: ";
+	cin >> navigate;
+}
 
 int main(){
 	
-	KeyPair key;
-	key.genKeyPair(key);
-	key.printDec(key);
-	key.printHex(key);
+	Account sender;
+	sender.genAccount(sender);
 
-	unsigned long long priv = key.getPriv();
-	Signature sign;
-	sign.signData(priv);
+	Account receiver;
+	receiver.genAccount(receiver);
 
 	return 0;
 }
