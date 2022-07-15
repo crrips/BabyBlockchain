@@ -121,7 +121,9 @@ private:
 
 public:
 
-	Account genAccount(Account &acc) {
+	Account genAccount(Blockchain blockchain) {
+
+		Account acc;
 
 		KeyPair key;
 		key.genKeyPair(key);
@@ -134,11 +136,17 @@ public:
 
 		index += 2;
 
+		blockchain.setAcc(acc);
+
 		return acc;
 	}
 
 	unsigned long long getPub(int index) {
 		return wallet[index];
+	}
+
+	unsigned long long getID() {
+		return accountID;
 	}
 
 	void addKeyPairToWallet() {
@@ -162,6 +170,10 @@ public:
 
 	int getBalance() {
 		return balance;
+	}
+
+	void setBalance(int bal) {
+		balance = bal;
 	}
 
 	void printBalance() {
@@ -232,24 +244,177 @@ public:
 
 };
 
+class Hash {
+
+public:
+
+	string toHash(string text) {
+
+		hash<string> hash_str;
+		string hash_text = to_string(hash_str(text));
+
+		return hash_text;
+	}
+
+};
+
 class Transaction {
 
 private:
 
 	string transactionID;
-	Operation setOfOperations[0xFFFFF];
+	Operation setOfOperations[0xFF];
 	int nonce = 0;
 
 public:
+
+	string address2string(Transaction tx) {
+
+		ostringstream oss;
+		oss << &tx;
+		string str = oss.str();
+
+		return str;
+	}
 
 	Transaction createTransaction(Operation operation) {
 
 		Transaction transaction;
 
+		string tmp_str = address2string(transaction);
+		Hash hash;
+		transactionID = hash.toHash(tmp_str);
+
 		transaction.setOfOperations[nonce] = operation;
 		transaction.nonce++;
 
 		return transaction;
+	}
+
+};
+
+class Block {
+
+private:
+
+	string BlockID;
+	string prevHash;
+	Transaction setOfTransactions[0xFF];
+
+public:
+
+	string address2string(Block block) {
+
+		ostringstream oss;
+		oss << &block;
+		string str = oss.str();
+
+		return str;
+	}
+
+	Block createBlock(Transaction setOfTransactions[], string prevHash) {
+
+		Block block;
+
+		string tmp_str = address2string(block);
+		Hash hash;
+		BlockID = hash.toHash(tmp_str);
+
+		block.prevHash = prevHash;
+
+		for (int i = 0; i < 0xFF; i++)
+		{
+			block.setOfTransactions[i] = setOfTransactions[i];
+		}
+
+		return block;
+	}
+
+	Block genBlock(Transaction tx) {
+
+		Block block;
+
+		string tmp_str = address2string(block);
+		Hash hash;
+		BlockID = hash.toHash(tmp_str);
+
+		block.setOfTransactions[0] = tx;
+
+		return block;
+	}
+
+	string getPrevHash() {
+		return prevHash;
+	}
+
+	string getBlockID() {
+		return BlockID;
+	}
+
+};
+
+class Blockchain {
+
+private:
+
+	Account coinDatabase[10000];
+	Block blockHistory[10];
+	int index_block = 0;
+	int index_acc = 0;
+	int faucetCoins = 10000;
+
+public:
+
+	Blockchain initBlockchain(Transaction tx) {
+
+		Block block;
+		block.genBlock(tx);
+
+		blockHistory[index_block] = block;
+
+		index_block++;
+
+	}
+
+	void getTokenFromFaucet(Account& account, int amount) {
+
+		if (amount <= faucetCoins)
+		{
+			faucetCoins -= amount;
+			int balance = account.getBalance() + amount;
+			account.setBalance(balance);
+		}
+		else
+		{
+			cout << "In faucet remained " << faucetCoins << " coin(s)!!!" << endl;
+		}
+
+	}
+
+	void validateBlock(Block block) {
+
+		if (block.getPrevHash() == blockHistory[index_block - 1].getBlockID())
+		{
+			blockHistory[index_block] = block;
+			index_block++;
+		}
+
+	}
+
+	void setAcc(Account acc) {
+
+		coinDatabase[index_acc] = acc;
+		index_acc++;
+
+	}
+
+	void showCoinDatabase() {
+
+		for (int i = 0; i < index_acc; i++)
+		{
+			cout << "Account ID: " << coinDatabase[i].getID() << "\n Balance: " << coinDatabase[i].getBalance() << endl << endl;
+		}
+
 	}
 
 };

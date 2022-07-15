@@ -3,7 +3,7 @@
 #include <string>
 #include <math.h>
 #include <random>
-#include <vector>
+#include <sstream>
 using namespace std;
 
 //////////////////////////////////
